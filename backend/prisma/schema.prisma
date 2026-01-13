@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-1.1.x", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Vendor {
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  rfps      RFP[]
+  proposals Proposal[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model RFP {
+  id             String     @id @default(cuid())
+  title          String
+  description    String
+  structuredData Json?      @default("{}")
+  status         String     @default("DRAFT")
+  vendors        Vendor[]
+  proposals      Proposal[]
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+}
+
+model Proposal {
+  id        String   @id @default(cuid())
+  price     String?
+  timeline  String?
+  terms     String?
+  rawText   String?  @db.Text
+  rfpId     String
+  rfp       RFP      @relation(fields: [rfpId], references: [id])
+  vendorId  String
+  vendor    Vendor   @relation(fields: [vendorId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
